@@ -18,6 +18,10 @@ def try_export_gltf_persistent(_, __):
 
 
 def register():
+    # Unregister debugging purposes to ensure fresh code is registered.
+    # Should not have a significant performance hit.
+    unregister()
+
     if try_export_gltf_persistent not in bpy.app.handlers.save_pre:
         bpy.app.handlers.save_pre.append(try_export_gltf_persistent)
 

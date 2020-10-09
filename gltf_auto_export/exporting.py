@@ -53,7 +53,7 @@ def try_export_gltf(_, __):
     if config is None:
         return
 
-    export_dir = config["export_dir"] or blend_dir
+    export_dir = config.get("export_dir") or blend_dir
     export_file = path.join(export_dir, name)
 
     print("Exporting ", export_file)

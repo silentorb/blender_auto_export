@@ -13,13 +13,15 @@ def find_config_file(project_file_name, current_path):
     parts[0] = parts[0] + os.sep
     for part in parts:
         accumulator = os.path.join(accumulator, part)
-        if os.path.exists(path.join(accumulator, project_file_name)):
-            return True
+        config_file = path.join(accumulator, project_file_name)
+        if os.path.exists(config_file):
+            return config_file
 
-    return False
+    return None
 
 
 def load_config(config_file):
+    print('config_file ' + config_file)
     config = configparser.ConfigParser()
     try:
         config.read(config_file)
@@ -27,11 +29,11 @@ def load_config(config_file):
         print(e)
         return None
 
-    return config
+    return config._sections
 
 
 def prepare_config(config):
-    gltf_config = config["gltf"] or {}
+    gltf_config = config.get("gltf") or {}
     return {
         "gltf": {
             **default_config(),
