@@ -3,9 +3,7 @@ from os import path
 
 import bpy
 
-from .configuration import try_load_config
-from .utility import debug_print
-from .workarounds import deselect_all, check_topology, prepare_animations
+from .workarounds import deselect_all, check_topology, deselect_objects
 
 
 def get_export_objects():
@@ -16,54 +14,39 @@ def get_export_objects():
     return result
 
 
+def select_objects(objs):
+    for obj in objs:
+        obj.select_set(True)
+
+
 def prepare_scene():
-    deselect_all()
     export_objects = get_export_objects()
+
     if os.environ.get("CHECK_TOPOLOGY", None):
         check_topology(export_objects)
 
-    prepare_animations()
+    # prepare_animations()
 
-    has_objects = len(export_objects) > 0
-    if has_objects:
+    if export_objects:
         deselect_all()
+        select_objects(export_objects)
 
-    return has_objects
-
-
-def get_blend_filename():
-    filepath = bpy.data.filepath
-    return path.splitext(path.basename(filepath))[0]
+    return export_objects
 
 
-def export_gltf(filepath, gltf_config):
-    bpy.ops.export_scene.gltf(
-        **gltf_config,
-        filepath=filepath
-    )
+def get_root_objects(objects):
+    return [obj for obj in objects if not obj.parent]
 
 
-def try_export_gltf(_, __):
-    blend_dir = path.dirname(bpy.data.filepath)
-    name = get_blend_filename()
-
-    debug_print("Checking glTF export")
-
-    config = try_load_config(blend_dir)
-    if config is None:
-        return
-
-    export_dir = config.get("export_dir") or blend_dir
-    export_file = path.join(export_dir, name)
-
-    print("Exporting ", export_file)
-
-    if prepare_scene():
-        export_gltf(export_file, config["gltf"])
-        print("Exported ", export_file)
-    else:
-        print("No objects to export")
-
-
-def bulk_export(dir):
-    print("Coming soon...")
+def export_gltf(export_dir, name, gltf_config, objects):
+    root_objects = get_root_objects(objects)
+    for obj in root_objects:
+        deselect_objects(root_objects)
+        obj.select_set(True)
+        filename = name if len(root_objects) == 1 else obj.name
+        filepath = path.join(export_dir, filename)
+        bpy.ops.export_scene.gltf(
+            **gltf_config,
+            filepath=filepath
+        )
+        print("Exported ", filepath)

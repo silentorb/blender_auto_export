@@ -2,26 +2,26 @@ import configparser
 import os
 from os import path
 
-from gltf_auto_export.defaults import default_config
-from gltf_auto_export.utility import report
+from .defaults import default_config
+from .utility import report, get_blend_dir
 
 
-def find_config_file(project_file_name, current_path):
-    normalized = os.path.normpath(current_path)
+def find_config_file(project_file_name, starting_path):
+    normalized = os.path.normpath(starting_path)
     parts = normalized.split(os.sep)
-    accumulator = ""
-    parts[0] = parts[0] + os.sep
-    for part in parts:
-        accumulator = os.path.join(accumulator, part)
-        config_file = path.join(accumulator, project_file_name)
+    current_path = starting_path
+    for i in range(len(parts) - 1):
+        config_file = path.join(current_path, project_file_name)
+        print(config_file)
         if os.path.exists(config_file):
             return config_file
+
+        current_path = path.dirname(current_path)
 
     return None
 
 
 def load_config(config_file):
-    print('config_file ' + config_file)
     config = configparser.ConfigParser()
     try:
         config.read(config_file)
@@ -53,3 +53,7 @@ def try_load_config(blend_dir):
         return None
 
     return prepare_config(config)
+
+
+def try_load_config_relative():
+    return try_load_config(get_blend_dir())

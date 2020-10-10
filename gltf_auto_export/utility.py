@@ -1,5 +1,6 @@
 import os
 import bpy
+from os import path
 
 
 def debug_print(message):
@@ -24,3 +25,12 @@ def report(message, severity="INFO"):
     bpy.utils.register_class(ErrorDisplay)
     bpy.ops.wm.error_display("EXEC_DEFAULT", message=message, severity=severity)
     bpy.utils.unregister_class(ErrorDisplay)
+
+
+def get_blend_dir():
+    return path.dirname(bpy.data.filepath)
+
+
+def get_blend_filename():
+    filepath = bpy.data.filepath
+    return path.splitext(path.basename(filepath))[0]

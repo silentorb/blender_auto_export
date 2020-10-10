@@ -1,7 +1,6 @@
 import bpy
-from bpy.app.handlers import persistent
 
-from .exporting import try_export_gltf
+from gltf_auto_export.running import try_export_gltf_persistent, running_main
 
 bl_info = {
     "name": "glTF Auto Export",
@@ -12,20 +11,11 @@ bl_info = {
 }
 
 
-@persistent
-def try_export_gltf_persistent(_, __):
-    try_export_gltf(_, __)
-
-
 def register():
-    # Unregister debugging purposes to ensure fresh code is registered.
-    # Should not have a significant performance hit.
-    unregister()
-
     if try_export_gltf_persistent not in bpy.app.handlers.save_pre:
-        bpy.app.handlers.save_pre.append(try_export_gltf_persistent)
+        bpy.app.handlers.save_post.append(try_export_gltf_persistent)
 
 
 def unregister():
     if try_export_gltf_persistent in bpy.app.handlers.save_pre:
-        bpy.app.handlers.save_pre.remove(try_export_gltf_persistent)
+        bpy.app.handlers.save_post.remove(try_export_gltf_persistent)
