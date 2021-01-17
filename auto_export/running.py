@@ -4,8 +4,8 @@ from os import path
 import bpy
 from bpy.app.handlers import persistent
 
-from gltf_auto_export.exporting import prepare_scene, export_gltf
-from gltf_auto_export.utility import get_blend_dir, get_blend_filename, debug_print
+from auto_export.exporting import prepare_scene, export_model
+from auto_export.utility import get_blend_dir, get_blend_filename, debug_print
 from .configuration import try_load_config_relative
 
 
@@ -17,18 +17,25 @@ def launch_blender(filepath):
     subprocess.call(command)
 
 
-def export_gltf_using_config(config):
-    export_dir = config.get("export_dir") or get_blend_dir()
+def get_custom_output_dir(config):
+    return path.abspath(path.join(path.dirname(config["config_file"]), config["output_dir"]))
+
+
+def export_using_config(config):
+    print('config', config)
+    export_dir = get_custom_output_dir(config) if "output_dir" in config else get_blend_dir()
     name = get_blend_filename()
+    if (config.get("folder_per_model", False)):
+        export_dir = path.join(export_dir, name)
 
     export_objects = prepare_scene()
     if export_objects:
-        export_gltf(export_dir, name, config["gltf"], export_objects)
+        export_model(export_dir, name, config, export_objects)
     else:
         print("No objects to export")
 
 
-def try_export_gltf(_, __):
+def try_export(_, __):
     print("Checking glTF export")
 
     config = try_load_config_relative()
@@ -40,8 +47,8 @@ def try_export_gltf(_, __):
 
 
 @persistent
-def try_export_gltf_persistent(_, __):
-    try_export_gltf(_, __)
+def try_export_persistent(_, __):
+    try_export(_, __)
 
 
 def bulk_export(dir):
@@ -53,7 +60,7 @@ def running_main():
     if config is None:
         return
 
-    export_gltf_using_config(config)
+    export_using_config(config)
 
 
 if __name__ == '__main__':

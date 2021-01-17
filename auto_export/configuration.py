@@ -1,8 +1,8 @@
-import configparser
+import json
 import os
 from os import path
 
-from .defaults import default_config
+from auto_export.gltf.defaults import default_configs
 from .utility import report, get_blend_dir
 
 
@@ -22,37 +22,40 @@ def find_config_file(project_file_name, starting_path):
 
 
 def load_config(config_file):
-    config = configparser.ConfigParser()
     try:
-        config.read(config_file)
+        with open(config_file) as file:
+            data = json.load(file)
     except Exception as e:
         print(e)
         return None
 
-    return config._sections
+    return data
 
 
-def prepare_config(config):
-    gltf_config = config.get("gltf") or {}
+def prepare_config(config, config_file):
+    format = config.get("format", "gltf")
+    local_config = config.get('exporter_config', {})
     return {
-        "gltf": {
-            **default_config(),
-            **gltf_config
-        }
+        **config,
+        "exporter_config": {
+            **default_configs().get(format, {}),
+            **local_config
+        },
+        'config_file': config_file
     }
 
 
 def try_load_config(blend_dir):
-    config_file = find_config_file("blender_gltf_export.ini", blend_dir)
+    config_file = find_config_file("blender_export.json", blend_dir)
     if config_file is None:
         return None
 
     config = load_config(config_file)
     if config is None:
-        report(f"Could not load glTF export configuration \"{config_file}\"", "ERROR")
+        report(f"Could not load auto export configuration \"{config_file}\"", "ERROR")
         return None
 
-    return prepare_config(config)
+    return prepare_config(config, config_file)
 
 
 def try_load_config_relative():

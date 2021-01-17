@@ -3,7 +3,7 @@ from os import path
 
 import bpy
 
-from .workarounds import deselect_all, check_topology, deselect_objects
+from auto_export.gltf.workarounds import deselect_all, check_topology, deselect_objects
 
 
 def get_export_objects():
@@ -38,15 +38,17 @@ def get_root_objects(objects):
     return [obj for obj in objects if not obj.parent]
 
 
-def export_gltf(export_dir, name, gltf_config, objects):
+def export_model(export_dir, name, config, objects):
     root_objects = get_root_objects(objects)
+    exporter_config = config.get("exporter_config", {})
+    os.makedirs(export_dir)
     for obj in root_objects:
         deselect_objects(root_objects)
         obj.select_set(True)
         filename = name if len(root_objects) == 1 else obj.name
         filepath = path.join(export_dir, filename)
         bpy.ops.export_scene.gltf(
-            **gltf_config,
+            **exporter_config,
             filepath=filepath
         )
         print("Exported ", filepath)

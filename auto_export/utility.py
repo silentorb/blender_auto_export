@@ -22,10 +22,12 @@ class ErrorDisplay(bpy.types.Operator):
 
 
 def report(message, severity="INFO"):
-    bpy.utils.register_class(ErrorDisplay)
-    bpy.ops.wm.error_display("EXEC_DEFAULT", message=message, severity=severity)
-    bpy.utils.unregister_class(ErrorDisplay)
-
+    try:
+        bpy.utils.register_class(ErrorDisplay)
+        bpy.ops.wm.error_display("EXEC_DEFAULT", message=message, severity=severity)
+        bpy.utils.unregister_class(ErrorDisplay)
+    except Exception as e:
+        print(e)
 
 def get_blend_dir():
     return path.dirname(bpy.data.filepath)
