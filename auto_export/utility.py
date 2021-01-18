@@ -36,3 +36,14 @@ def get_blend_dir():
 def get_blend_filename():
     filepath = bpy.data.filepath
     return path.splitext(path.basename(filepath))[0]
+
+
+def deselect_objects(objects):
+    bpy.context.view_layer.objects.active = None
+    for obj in objects:
+        obj.select_set(False)
+
+
+# The Blender operator to select/deselect has a bug with needing to get the proper context based on mouse hovering :(
+def deselect_all():
+    deselect_objects(bpy.data.objects)

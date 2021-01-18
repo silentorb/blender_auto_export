@@ -5,9 +5,9 @@ A Blender plugin for automating exporting models
 ## Overview
 
 * Any time a Blender file is saved, this plugin checks if the .blend file has any parent directory with a `blender_export.json` file
-* If a `blender_export.json` file is found, any configuration is loaded from it and a glTF file is exported
+* If a `blender_export.json` file is found, any configuration is loaded from it and a model file is exported
 * The `blender_export.json` file can be empty
-* Exporting is performed using the standard [Blender glTF Exporter](https://github.com/KhronosGroup/glTF-Blender-IO)
+* Primarily supports glTF and fbx but is designed to support other exporters
 
 ## Configuration
 
@@ -15,8 +15,17 @@ A Blender plugin for automating exporting models
 
 * By default the target export directory is the location of the .blend file
 
-### Sample
-
+### Sample `blender_export.json`
+```json
+{
+  "output_format": "gltf",
+  "output_dir": "../../output",
+  "folder_per_model": true,
+  "exporter_config": {
+    "export_yup": false
+  }
+}
+```
 ### Object Filtering
 
 You can prevent objects from being exported by either:

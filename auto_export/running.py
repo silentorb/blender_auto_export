@@ -34,6 +34,10 @@ def export_using_config(config):
     else:
         print("No objects to export")
 
+    # Used to save a sample of the blend file containing all of the export workarounds
+    if "debug_blend" in config:
+        bpy.ops.wm.save_as_mainfile(filepath=config["debug_blend"])
+
 
 def try_export(_, __):
     print("Checking glTF export")

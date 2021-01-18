@@ -3,8 +3,8 @@ from os import path
 
 import bpy
 
-from auto_export.gltf.workarounds import deselect_all, check_topology, deselect_objects
-
+from auto_export.gltf.workarounds import check_topology
+from auto_export.utility import deselect_all, deselect_objects
 
 def get_export_objects():
     result = []
@@ -38,16 +38,31 @@ def get_root_objects(objects):
     return [obj for obj in objects if not obj.parent]
 
 
+def get_export_file_extension(config):
+    if "extension" in config:
+        return config["extension"]
+
+    extension_map = {
+        "gltf": "",
+        "fbx": ".fbx"
+    }
+
+    return extension_map.get(config["format"], "")
+
+
 def export_model(export_dir, name, config, objects):
     root_objects = get_root_objects(objects)
     exporter_config = config.get("exporter_config", {})
-    os.makedirs(export_dir)
+    os.makedirs(export_dir, exist_ok=True)
+    export_scene = bpy.ops.export_scene
+    exporter = getattr(export_scene, config["format"])
+    extension = get_export_file_extension(config)
     for obj in root_objects:
         deselect_objects(root_objects)
         obj.select_set(True)
         filename = name if len(root_objects) == 1 else obj.name
-        filepath = path.join(export_dir, filename)
-        bpy.ops.export_scene.gltf(
+        filepath = path.join(export_dir, filename + extension)
+        exporter(
             **exporter_config,
             filepath=filepath
         )

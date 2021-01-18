@@ -16,17 +16,6 @@ def add_keyframe_if_missing(curves, obj_name, property_name, values):
         curve.keyframe_points.insert(0, value)
 
 
-def deselect_objects(objects):
-    bpy.context.view_layer.objects.active = None
-    for obj in objects:
-        obj.select_set(False)
-
-
-# The Blender operator to select/deselect has a bug with needing to get the proper context based on mouse hovering :(
-def deselect_all():
-    deselect_objects(bpy.data.objects)
-
-
 # This function is used to ensure animation markers are exported
 def prepare_animations():
     for action in bpy.data.actions:
