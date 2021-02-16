@@ -22,7 +22,7 @@ def get_custom_output_dir(config):
 
 
 def export_using_config(config):
-    print('config', config)
+    # print('config', config)
     export_dir = get_custom_output_dir(config) if "output_dir" in config else get_blend_dir()
     name = get_blend_filename()
     if (config.get("folder_per_model", False)):
@@ -37,6 +37,7 @@ def export_using_config(config):
     # Used to save a sample of the blend file containing all of the export workarounds
     if "debug_blend" in config:
         bpy.ops.wm.save_as_mainfile(filepath=config["debug_blend"])
+        print("Saved debug blend file at ")
 
 
 def try_export(_, __):

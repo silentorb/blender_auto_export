@@ -50,6 +50,21 @@ def get_export_file_extension(config):
     return extension_map.get(config["format"], "")
 
 
+def export_prepared_model(exporter, exporter_config, filepath):
+    exporter(
+        **exporter_config,
+        filepath=filepath
+    )
+    print("Exported ", filepath)
+
+
+def set_export_object_visibility(objs):
+    for obj in objs:
+        if obj.hide_get():
+            obj.hide_set(False)
+        obj.select_set(True)
+
+
 def export_model(export_dir, name, config, objects):
     root_objects = get_root_objects(objects)
     exporter_config = config.get("exporter_config", {})
@@ -57,13 +72,16 @@ def export_model(export_dir, name, config, objects):
     export_scene = bpy.ops.export_scene
     exporter = getattr(export_scene, config["format"])
     extension = get_export_file_extension(config)
-    for obj in root_objects:
-        deselect_objects(root_objects)
-        obj.select_set(True)
-        filename = name if len(root_objects) == 1 else obj.name
-        filepath = path.join(export_dir, filename + extension)
-        exporter(
-            **exporter_config,
-            filepath=filepath
-        )
-        print("Exported ", filepath)
+    if config["file_per_object"]:
+        for obj in root_objects:
+            deselect_objects(root_objects)
+            obj.select_set(True)
+            filename = name if len(root_objects) == 1 else obj.name
+            filepath = path.join(export_dir, filename + extension)
+            export_prepared_model(exporter, exporter_config, filepath)
+    else:
+        set_export_object_visibility(objects)
+
+        filepath = path.join(export_dir, name + extension)
+        export_prepared_model(exporter, exporter_config, filepath)
+        print(len(objects))

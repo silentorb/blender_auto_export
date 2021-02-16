@@ -35,7 +35,11 @@ def load_config(config_file):
 def prepare_config(config, config_file):
     format = config.get("format", "gltf")
     local_config = config.get('exporter_config', {})
+    if format == "fbx" and "object_types" in local_config:
+        local_config["object_types"] = set(local_config["object_types"])
+
     return {
+        "file_per_object": False,
         **config,
         "exporter_config": {
             **default_configs().get(format, {}),
