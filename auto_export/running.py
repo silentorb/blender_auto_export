@@ -28,7 +28,7 @@ def export_using_config(config):
     if (config.get("folder_per_model", False)):
         export_dir = path.join(export_dir, name)
 
-    export_objects = prepare_scene()
+    export_objects = prepare_scene(config)
     if export_objects:
         export_model(export_dir, name, config, export_objects)
     else:

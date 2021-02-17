@@ -5,6 +5,8 @@ import bpy
 
 from auto_export.gltf.workarounds import check_topology
 from auto_export.utility import deselect_all, deselect_objects
+from .shapes import preprocess_bounds_shape
+
 
 def get_export_objects():
     result = []
@@ -19,13 +21,17 @@ def select_objects(objs):
         obj.select_set(True)
 
 
-def prepare_scene():
+def prepare_scene(config):
     export_objects = get_export_objects()
 
     if os.environ.get("CHECK_TOPOLOGY", None):
         check_topology(export_objects)
 
     # prepare_animations()
+
+    if config.get("shape_bounds", False):
+        for obj in bpy.context.scene.objects:
+            preprocess_bounds_shape(obj)
 
     if export_objects:
         deselect_all()
