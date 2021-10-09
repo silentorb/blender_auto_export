@@ -81,6 +81,7 @@ def export_model(export_dir, name, config, objects):
     if config["file_per_object"]:
         for obj in root_objects:
             deselect_objects(root_objects)
+            obj.hide_set(False)
             obj.select_set(True)
             filename = name if len(root_objects) == 1 else obj.name
             filepath = path.join(export_dir, filename + extension)

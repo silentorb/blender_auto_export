@@ -25,7 +25,7 @@ def export_using_config(config):
     # print('config', config)
     export_dir = get_custom_output_dir(config) if "output_dir" in config else get_blend_dir()
     name = get_blend_filename()
-    if (config.get("folder_per_model", False)):
+    if config.get("folder_per_model", False):
         export_dir = path.join(export_dir, name)
 
     export_objects = prepare_scene(config)
