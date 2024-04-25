@@ -29,6 +29,7 @@ def report(message, severity="INFO"):
     except Exception as e:
         print(e)
 
+
 def get_blend_dir():
     return path.dirname(bpy.data.filepath)
 

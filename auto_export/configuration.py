@@ -1,8 +1,10 @@
 import json
 import os
 from os import path
+from typing import Optional
 
 from auto_export.gltf.defaults import default_configs
+from .types import Config
 from .utility import report, get_blend_dir
 
 
@@ -32,35 +34,50 @@ def load_config(config_file):
     return data
 
 
-def prepare_config(config, config_file):
-    format = config.get("format", "gltf")
-    local_config = config.get('exporter_config', {})
-    if format == "fbx" and "object_types" in local_config:
+def get_custom_output_dir(config_path: str, output_dir: Optional[str]):
+    return path.abspath(path.join(path.dirname(config_path), output_dir)) if output_dir else get_blend_dir()
+
+
+def prepare_config(data, config_file) -> Config:
+    output_format = data.get("output_format", "gltf")
+    local_config = data.get('exporter_config', {})
+    if output_format == "fbx" and "object_types" in local_config:
         local_config["object_types"] = set(local_config["object_types"])
 
-    return {
-        "file_per_object": False,
-        **config,
-        "exporter_config": {
-            **default_configs().get(format, {}),
+    config = Config(
+        output_format=output_format,
+        output_dir=get_custom_output_dir(config_file, data.get("output_dir", None)),
+        exporter_config={
+            **default_configs().get(output_format, {}),
             **local_config
-        },
-        'config_file': config_file
-    }
+        }
+    )
+
+    custom_fields = ["output_format", "output_dir", "exporter_config"]
+
+    for field, _ in vars(Config).items():
+        if field in custom_fields:
+            continue
+
+        value = data.get(field, None)
+        if value is not None:
+            setattr(config, field, value)
+
+    return config
 
 
-def try_load_config(blend_dir):
+def try_load_config(blend_dir) -> Optional[Config]:
     config_file = find_config_file("blender_export.json", blend_dir)
     if config_file is None:
         return None
 
-    config = load_config(config_file)
-    if config is None:
+    raw_config = load_config(config_file)
+    if raw_config is None:
         report(f"Could not load auto export configuration \"{config_file}\"", "ERROR")
         return None
 
-    return prepare_config(config, config_file)
+    return prepare_config(raw_config, config_file)
 
 
-def try_load_config_relative():
+def try_load_config_relative() -> Optional[Config]:
     return try_load_config(get_blend_dir())

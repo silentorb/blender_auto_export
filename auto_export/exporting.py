@@ -6,6 +6,8 @@ import bpy
 from auto_export.gltf.workarounds import check_topology
 from auto_export.utility import deselect_all, deselect_objects
 from .shapes import preprocess_bounds_shape
+from baking import bake_all, prune_graph_for_texture
+from .types import Config
 
 
 def get_export_objects():
@@ -21,7 +23,7 @@ def select_objects(objs):
         obj.select_set(True)
 
 
-def prepare_scene(config):
+def prepare_scene(config: Config):
     export_objects = get_export_objects()
 
     if os.environ.get("CHECK_TOPOLOGY", None):
@@ -29,7 +31,7 @@ def prepare_scene(config):
 
     # prepare_animations()
 
-    if config.get("shape_bounds", False):
+    if config.shape_bounds:
         for obj in bpy.context.scene.objects:
             preprocess_bounds_shape(obj)
 
@@ -53,7 +55,7 @@ def get_export_file_extension(config):
         "fbx": ".fbx"
     }
 
-    return extension_map.get(config["format"], "")
+    return extension_map.get(config["output_format"], "")
 
 
 def export_prepared_model(exporter, exporter_config, filepath):
@@ -71,14 +73,14 @@ def set_export_object_visibility(objs):
         obj.select_set(True)
 
 
-def export_model(export_dir, name, config, objects):
+def export_model(export_dir, name, config: Config, objects):
     root_objects = get_root_objects(objects)
-    exporter_config = config.get("exporter_config", {})
+    exporter_config = config.exporter_config
     os.makedirs(export_dir, exist_ok=True)
     export_scene = bpy.ops.export_scene
-    exporter = getattr(export_scene, config["format"])
+    exporter = getattr(export_scene, config.output_format)
     extension = get_export_file_extension(config)
-    if config["file_per_object"]:
+    if config.file_per_object:
         for obj in root_objects:
             deselect_objects(root_objects)
             obj.hide_set(False)

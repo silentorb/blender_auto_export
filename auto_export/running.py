@@ -5,6 +5,7 @@ import bpy
 from bpy.app.handlers import persistent
 
 from auto_export.exporting import prepare_scene, export_model
+from auto_export.types import Config
 from auto_export.utility import get_blend_dir, get_blend_filename, debug_print
 from .configuration import try_load_config_relative
 
@@ -17,15 +18,10 @@ def launch_blender(filepath):
     subprocess.call(command)
 
 
-def get_custom_output_dir(config):
-    return path.abspath(path.join(path.dirname(config["config_file"]), config["output_dir"]))
-
-
-def export_using_config(config):
-    # print('config', config)
-    export_dir = get_custom_output_dir(config) if "output_dir" in config else get_blend_dir()
+def export_using_config(config: Config):
+    export_dir = config.output_dir
     name = get_blend_filename()
-    if config.get("folder_per_model", False):
+    if config.folder_per_model:
         export_dir = path.join(export_dir, name)
 
     export_objects = prepare_scene(config)
@@ -34,8 +30,8 @@ def export_using_config(config):
     else:
         print("No objects to export")
 
-    # Used to save a sample of the blend file containing all of the export workarounds
-    if "debug_blend" in config:
+    # Used to save a sample of the blend file containing every export workaround
+    if config.save_debug_blend:
         bpy.ops.wm.save_as_mainfile(filepath=config["debug_blend"])
         print("Saved debug blend file at ")
 
@@ -54,10 +50,6 @@ def try_export(_, __):
 @persistent
 def try_export_persistent(_, __):
     try_export(_, __)
-
-
-def bulk_export(dir):
-    print("Coming soon...")
 
 
 def running_main():
