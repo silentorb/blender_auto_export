@@ -12,10 +12,10 @@ bl_info = {
 
 
 def register():
-    if try_export_persistent not in bpy.app.handlers.save_pre:
+    if try_export_persistent not in bpy.app.handlers.save_post:
         bpy.app.handlers.save_post.append(try_export_persistent)
 
 
 def unregister():
-    if try_export_persistent in bpy.app.handlers.save_pre:
+    if try_export_persistent in bpy.app.handlers.save_post:
         bpy.app.handlers.save_post.remove(try_export_persistent)

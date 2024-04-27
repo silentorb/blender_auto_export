@@ -19,18 +19,16 @@ def launch_blender(filepath):
 
 
 def export_using_config(config: Config):
-    export_dir = config.output_dir
+    output_dir = config.output_dir
     name = get_blend_filename()
-    if config.folder_per_model:
-        export_dir = path.join(export_dir, name)
 
     export_objects = prepare_scene(config)
     if export_objects:
-        export_model(export_dir, name, config, export_objects)
+        export_model(output_dir, name, config, export_objects)
     else:
         print("No objects to export")
 
-    # Used to save a sample of the blend file containing every export workaround
+    # Used to save a sample of the blend file containing every intermediate state modification
     if config.debug_blend:
         bpy.ops.wm.save_as_mainfile(filepath=config.debug_blend)
         print("Saved debug blend file at ")

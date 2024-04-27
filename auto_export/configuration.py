@@ -5,7 +5,7 @@ from typing import Optional
 
 from auto_export.gltf.defaults import default_configs
 from .types import Config
-from .utility import report, get_blend_dir
+from .utility import report, get_blend_dir, get_blend_filename
 
 
 def find_config_file(project_file_name, starting_path):
@@ -34,11 +34,18 @@ def load_config(config_file):
     return data
 
 
-def get_custom_output_dir(config_path: str, output_dir: Optional[str]):
-    return path.abspath(path.join(path.dirname(config_path), output_dir)) if output_dir else get_blend_dir()
+def get_custom_output_dir(config_path: str, data: dict):
+    initial_output_dir = data.get("output_dir", None)
+    output_dir = path.abspath(path.join(path.dirname(config_path), initial_output_dir)) \
+        if initial_output_dir else get_blend_dir()
+
+    if data.get("folder_per_model", False):
+        return path.join(output_dir, get_blend_filename())
+
+    return output_dir
 
 
-def prepare_config(data, config_file) -> Config:
+def prepare_config(data: dict, config_file) -> Config:
     args = dict(data)
     output_format = data.get("output_format", "gltf")
     local_config = data.get('exporter_config', {})
@@ -46,7 +53,7 @@ def prepare_config(data, config_file) -> Config:
         local_config["object_types"] = set(local_config["object_types"])
 
     args["output_format"] = output_format
-    args["output_dir"] = get_custom_output_dir(config_file, data.get("output_dir", None))
+    args["output_dir"] = get_custom_output_dir(config_file, data)
     args["exporter_config"] = {
         **default_configs().get(output_format, {}),
         **local_config
