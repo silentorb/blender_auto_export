@@ -31,8 +31,8 @@ def export_using_config(config: Config):
         print("No objects to export")
 
     # Used to save a sample of the blend file containing every export workaround
-    if config.save_debug_blend:
-        bpy.ops.wm.save_as_mainfile(filepath=config["debug_blend"])
+    if config.debug_blend:
+        bpy.ops.wm.save_as_mainfile(filepath=config.debug_blend)
         print("Saved debug blend file at ")
 
 

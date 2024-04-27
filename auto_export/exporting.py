@@ -6,7 +6,7 @@ import bpy
 from auto_export.gltf.workarounds import check_topology
 from auto_export.utility import deselect_all, deselect_objects
 from .shapes import preprocess_bounds_shape
-from baking import bake_all, prune_graph_for_texture
+from .baking import bake_all
 from .types import Config
 
 
@@ -29,6 +29,7 @@ def prepare_scene(config: Config):
     if os.environ.get("CHECK_TOPOLOGY", None):
         check_topology(export_objects)
 
+    bake_all(config.output_dir)
     # prepare_animations()
 
     if config.shape_bounds:
@@ -46,16 +47,13 @@ def get_root_objects(objects):
     return [obj for obj in objects if not obj.parent]
 
 
-def get_export_file_extension(config):
-    if "extension" in config:
-        return config["extension"]
-
+def get_export_file_extension(config: Config):
     extension_map = {
         "gltf": "",
         "fbx": ".fbx"
     }
 
-    return extension_map.get(config["output_format"], "")
+    return extension_map.get(config.output_format, "")
 
 
 def export_prepared_model(exporter, exporter_config, filepath):

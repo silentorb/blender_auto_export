@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 
 class Config(NamedTuple):
@@ -7,5 +7,5 @@ class Config(NamedTuple):
     folder_per_model: bool = False
     file_per_object: bool = False
     shape_bounds: bool = False
-    save_debug_blend: bool = False
+    debug_blend: Optional[str] = None
     exporter_config: dict = {}

@@ -39,31 +39,20 @@ def get_custom_output_dir(config_path: str, output_dir: Optional[str]):
 
 
 def prepare_config(data, config_file) -> Config:
+    args = dict(data)
     output_format = data.get("output_format", "gltf")
     local_config = data.get('exporter_config', {})
     if output_format == "fbx" and "object_types" in local_config:
         local_config["object_types"] = set(local_config["object_types"])
 
-    config = Config(
-        output_format=output_format,
-        output_dir=get_custom_output_dir(config_file, data.get("output_dir", None)),
-        exporter_config={
-            **default_configs().get(output_format, {}),
-            **local_config
-        }
-    )
+    args["output_format"] = output_format
+    args["output_dir"] = get_custom_output_dir(config_file, data.get("output_dir", None))
+    args["exporter_config"] = {
+        **default_configs().get(output_format, {}),
+        **local_config
+    }
 
-    custom_fields = ["output_format", "output_dir", "exporter_config"]
-
-    for field, _ in vars(Config).items():
-        if field in custom_fields:
-            continue
-
-        value = data.get(field, None)
-        if value is not None:
-            setattr(config, field, value)
-
-    return config
+    return Config(**args)
 
 
 def try_load_config(blend_dir) -> Optional[Config]:

@@ -7,7 +7,7 @@ def create_image(image_name, image_path, length):
     # image.source = 'FILE'
     image.filepath_raw = image_path
     print(image_path)
-    image.file_format = 'JPEG'
+    image.file_format = 'PNG'
     return image
 
 
@@ -28,7 +28,7 @@ def select_material_node(material, node):
 
 
 def bake_texture(original, material, image):
-    print('Baking texture for ' + original.name)
+    print(f"Baking texture for {original.name} | {material.name}")
     for obj in bpy.data.objects:
         if obj.hide_get():
             obj.hide_set(True)
@@ -63,24 +63,40 @@ def get_bake_object_material_pairs():
     return result
 
 
-def prune_graph_for_texture(material, image):
+def prune_graph_for_texture(obj, material, image):
     tree = material.node_tree
     nodes = tree.nodes
-    for node in nodes:
-        nodes.remove(node)
+    nodes.clear()
 
     texture_node = create_texture_node(material, image)
     emission_node = material.node_tree.nodes.new('ShaderNodeBsdfPrincipled')
     tree.links.new(texture_node.outputs[0], emission_node.inputs[0])
+
+    # bpy.ops.wm.save_as_mainfile(filepath="e:/bake-debug.blend")
+
+    # Delete other materials
+    obj.data.materials.clear()
+    obj.data.materials.append(material)
+    # for material_index in range(len(obj.data.materials) - 1, -1, -1):
+    #     if m is not material:
+    #         obj.data.materials.pop(index=m)
+    #         # bpy.data.materials.remove(m)
+
+    # Reassign all polygons to the one remaining object material.
+    # This is redundant for any polygons already assigned to the remaining material,
+    # But should be as performant if not more so than filtering would take.
+    for polygon in obj.data.polygons:
+        polygon.material_index = 0
 
 
 def bake_all(image_directory):
     bake_pairs = get_bake_object_material_pairs()
     for obj, material in bake_pairs:
         obj.material_slots[0].material = material
-        image_path = os.path.join(image_directory, material.name + '.jpg')
+        image_path = os.path.join(image_directory, material.name + '.png')
+        print(f"image_path: {image_path}")
         length = int(round(float(material['size']))) if 'size' in material else 1024
         image = create_image(material.name, image_path, length)
         bake_texture(obj, material, image)
         image.save()
-        prune_graph_for_texture(material, image)
+        prune_graph_for_texture(obj, material, image)
