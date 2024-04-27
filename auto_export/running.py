@@ -36,6 +36,14 @@ def export_using_config(config: Config):
         print("Saved debug blend file at ")
 
 
+def running_main():
+    config = try_load_config_relative()
+    if config is None:
+        return
+
+    export_using_config(config)
+
+
 def try_export(_, __):
     print("Checking glTF export")
 
@@ -50,14 +58,6 @@ def try_export(_, __):
 @persistent
 def try_export_persistent(_, __):
     try_export(_, __)
-
-
-def running_main():
-    config = try_load_config_relative()
-    if config is None:
-        return
-
-    export_using_config(config)
 
 
 if __name__ == '__main__':

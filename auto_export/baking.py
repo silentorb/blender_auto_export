@@ -4,9 +4,8 @@ import os.path
 
 def create_image(image_name, image_path, length):
     image = bpy.data.images.new(image_name, length, length)
-    # image.source = 'FILE'
-    image.filepath_raw = image_path
     print(image_path)
+    image.filepath_raw = image_path
     image.file_format = 'PNG'
     return image
 
@@ -27,17 +26,22 @@ def select_material_node(material, node):
     material.node_tree.nodes.active = node
 
 
-def bake_texture(original, material, image):
-    print(f"Baking texture for {original.name} | {material.name}")
-    for obj in bpy.data.objects:
-        if obj.hide_get():
-            obj.hide_set(True)
-    original.hide_set(False)
+def bake_texture(original, image):
+    print(f"Baking texture for {original.name}")
+    # for obj in bpy.data.objects:
+    #     if obj.hide_get():
+    #         obj.hide_set(True)
+    # original.hide_set(False)
     set_active_object(original)
-    bpy.ops.uv.smart_project()
-    node = create_texture_node(material, image)
-    select_material_node(material, node)
-    bpy.ops.object.bake()
+    # bpy.ops.uv.smart_project()
+
+    for material in original.data.materials:
+        node = create_texture_node(material, image)
+        select_material_node(material, node)
+
+    bpy.context.scene.cycles.bake_type = 'DIFFUSE'
+    bpy.ops.wm.save_as_mainfile(filepath="e:/bake-debug.blend")
+    bpy.ops.object.bake(type='DIFFUSE', save_mode='EXTERNAL')
     print('Bake finished')
 
 
@@ -97,6 +101,6 @@ def bake_all(image_directory):
         print(f"image_path: {image_path}")
         length = int(round(float(material['size']))) if 'size' in material else 1024
         image = create_image(material.name, image_path, length)
-        bake_texture(obj, material, image)
+        bake_texture(obj, image)
         image.save()
         prune_graph_for_texture(obj, material, image)
